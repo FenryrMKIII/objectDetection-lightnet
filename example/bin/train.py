@@ -9,7 +9,10 @@ import torch
 import visdom
 import numpy as np
 import lightnet as ln
-from dataset import *
+from datasetPerso import valveDataset
+from pathlib import Path
+import brambox as bb
+from PIL import Image
 
 log = logging.getLogger('lightnet.VOC.train')
 
@@ -18,7 +21,8 @@ class TrainEngine(ln.engine.Engine):
     def start(self):
         self.params.to(self.device)
         self.dataloader.change_input_dim()
-        self.optimizer.step(self.batch)     # Needed when resuming, harmless with batch=0
+        # self.optimizer.step(self.batch)     # Needed when resuming, harmless with batch=0
+        self.optimizer.step()
         self.optimizer.zero_grad()
 
         self.train_loss = {'tot': [], 'coord': [], 'conf': [], 'cls': []}
@@ -130,13 +134,14 @@ if __name__ == '__main__':
         else:
             params.network.load(args.weight, strict=False)  # Disable strict mode for loading partial weights
 
-    # Dataloader
+   # Dataloader
+    dataPath = Path(args.anno)
     training_loader = ln.data.DataLoader(
-        VOCDataset(os.path.join(args.anno, params.train_set), params, True),
+        valveDataset(dataPath, params, False),
         batch_size = params.mini_batch_size,
         shuffle = True,
         drop_last = True,
-        num_workers = 8,
+        num_workers = 1,
         pin_memory = True,
         collate_fn = ln.data.brambox_collate,
     )

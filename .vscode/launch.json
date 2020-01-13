@@ -11,11 +11,20 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "args" :  [
-                "C:\\Users\\DAA426\\myWork\\objectDetection-lightnet\\data\\weights\\yolov2-voc.weights",
-                //"C:\\Users\\DAA426\\myWork\\objectDetection-lightnet\\data\\images\\exploiting\\dog.jpg",
-                "-n", "C:\\Users\\DAA426\\myWork\\objectDetection-lightnet\\example\\cfg\\yolo.py",
-                //"-t", "0.5",
-                "-a", "C:\\Users\\DAA426\\myWork\\objectDetection-lightnet\\data\\images\\valves"
+                // training
+                //"C:\\Users\\DAA426\\myWork\\objectDetection-lightnet\\data\\weights\\yolov2-voc.weights",
+                //"-n", "C:\\Users\\DAA426\\myWork\\objectDetection-lightnet\\example\\cfg\\yolo.py",
+                //"-a", "C:\\Users\\DAA426\\myWork\\objectDetection-lightnet\\data\\images\\valves"
+                // test
+                //"backup/weights_5000.state.pt",
+                //"-n", "example/cfg/yolo.py",
+                //"-a", "data/images/valves"
+                //"-t", "0.6"
+                // exploit
+                "backup/weights_10000.state.pt",
+                "data/images/valves-exploit/manual1.png",
+                "-n", "example/cfg/yolo.py",
+                "-t", "0.3"
 
             ]
         }

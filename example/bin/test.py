@@ -8,8 +8,14 @@ from PIL import Image
 import pandas as pd
 from tqdm import tqdm
 import lightnet as ln
+import importlib
 import brambox as bb
-from dataset import *
+importlib.reload(bb)
+from datasetPerso import valveDataset
+from pathlib import Path
+import matplotlib.pyplot as plt
+import numpy as np
+
 
 log = logging.getLogger('lightnet.VOC.test')
 
@@ -64,6 +70,7 @@ class TestEngine:
             det = rlb(det)
             bb.io.save(det, 'pandas', self.detection)
 
+
     def test_none(self):
         anno, det = [], []
 
@@ -76,6 +83,18 @@ class TestEngine:
                 output.image = pd.Categorical.from_codes(output.image, dtype=target.image.dtype)
                 anno.append(target)
                 det.append(output)
+
+                bbPath = Path(r"C:\Users\DAA426\myWork\objectDetection-lightnet\data\images\valves")
+                drawer = bb.util.BoxDrawer(
+                images=lambda img: Path.joinpath(bbPath, img + ".png"),  # Function to retrieve image path from image column name
+                boxes=output,
+                label=output.class_label,                 # Write class_label above boxes
+                )
+
+                # for thing in drawer :
+                #     plt.axis('off')
+                #     plt.imshow(np.asarray(thing))
+                #     plt.show()
 
         anno = bb.util.concat(anno, ignore_index=True, sort=False)
         det = bb.util.concat(det, ignore_index=True, sort=False)
@@ -153,12 +172,13 @@ if __name__ == '__main__':
         params.post[0].conf_thresh = args.thresh
 
     # Dataloader
+    dataPath = Path(args.anno)
     testing_dataloader = torch.utils.data.DataLoader(
-        VOCDataset(os.path.join(args.anno, params.test_set), params, False),
+        valveDataset(dataPath, params, False),
         batch_size = params.mini_batch_size,
-        shuffle = False,
-        drop_last = False,
-        num_workers = 8,
+        shuffle = True,
+        drop_last = True,
+        num_workers = 1,
         pin_memory = True,
         collate_fn = ln.data.brambox_collate,
     )
@@ -167,7 +187,7 @@ if __name__ == '__main__':
     eng = TestEngine(
         params, testing_dataloader,
         device=device,
-        loss_format=args.loss,
+        loss_format='none',
         detection=args.det,
     )
     eng()

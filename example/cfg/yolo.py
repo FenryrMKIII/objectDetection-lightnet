@@ -6,10 +6,10 @@ __all__ = ['params']
 
 params = ln.engine.HyperParameters( 
     # Network
-    class_label_map = ['aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike', 'person', 'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor'],
+    class_label_map = ['valve'],
     _input_dimension = (416, 416),
-    _batch_size = 64,
-    _mini_batch_size = 8,
+    _batch_size = 2,
+    _mini_batch_size = 1,
     _max_batches = 80200,
 
     # Dataset
@@ -18,11 +18,11 @@ params = ln.engine.HyperParameters(
     _filter_anno = 'ignore',
 
     # Data Augmentation
-    _jitter = .3,
-    _flip = .5,
-    _hue = .1,
-    _saturation = 1.5,
-    _value = 1.5,
+    _jitter = 0.0,
+    _flip = 0.0,
+    _hue = 0.0,
+    _saturation = 0.0,
+    _value = 0.0,
 )
 
 # Network
@@ -32,6 +32,7 @@ def init_weights(m):
 
 params.network = ln.models.Yolo(len(params.class_label_map))
 params.network.apply(init_weights)
+
 
 # Loss
 params.loss = ln.network.loss.RegionLoss(

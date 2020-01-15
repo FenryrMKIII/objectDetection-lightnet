@@ -21,10 +21,11 @@
                 //"-a", "data/images/valves"
                 //"-t", "0.6"
                 // exploit
-                "backup/weights_10000.state.pt",
-                "data/images/valves-exploit/manual1.png",
+                "backup/weights_5500.state.pt",
+                "data/images/valves-exploit/manual6.jpg",
                 "-n", "example/cfg/yolo.py",
-                "-t", "0.3"
+                "-t", "0.4"
+                //"-o", "yalah.jpg"
 
             ]
         }

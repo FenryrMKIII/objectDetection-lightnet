@@ -10,6 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
+            "justMyCode" : false,
             "args" :  [
                 // training
                 //"C:\\Users\\DAA426\\myWork\\objectDetection-lightnet\\data\\weights\\yolov2-voc.weights",
@@ -21,7 +22,7 @@
                 //"-a", "data/images/valves"
                 //"-t", "0.6"
                 // exploit
-                "backup/weights_5500.state.pt",
+                "backup/weights_21000.state.pt",
                 "data/images/valves-exploit/manual6.jpg",
                 "-n", "example/cfg/yolo.py",
                 "-t", "0.4"

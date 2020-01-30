@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Current File",
+            "name": "train",
             "type": "python",
             "request": "launch",
             "program": "${file}",
@@ -29,6 +29,36 @@
                 //"-o", "yalah.jpg"
 
             ]
+        },
+        {
+            "name": "Anchor",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode" : false,
+            "args" :  ["-a", "data/images/coco/train",
+                       "-r", "608",
+                       "-k", "9"]
+        },
+        {
+            "name": "conversion",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode" : true,
+            "args" :  ["-a", "C:/Users/DAA426/myWork/objectDetection-lightnet/data/cocojson"]
+        },  
+
+
+        {
+            "name": "Standard",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode" : true
         }
     
     ]

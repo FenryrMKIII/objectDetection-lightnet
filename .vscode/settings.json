@@ -1,3 +1,4 @@
 {
-    "python.pythonPath": "C:\\Users\\DAA426\\AppData\\Local\\Continuum\\miniconda3\\envs\\PyTorch\\python.exe"
+    "python.pythonPath": "C:\\Users\\DAA426\\AppData\\Local\\Continuum\\miniconda3\\envs\\PyTorch\\python.exe",
+    "git.ignoreLimitWarning": true
 }

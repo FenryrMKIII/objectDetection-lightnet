@@ -37,8 +37,8 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode" : false,
-            "args" :  ["-a", "data/images/coco/train",
-                       "-r", "608",
+            "args" :  ["-a", "data/images/coco/train2014",
+                       "-r", "416",
                        "-k", "9"]
         },
         {
@@ -48,7 +48,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode" : true,
-            "args" :  ["-a", "C:/Users/DAA426/myWork/objectDetection-lightnet/data/cocojson"]
+            "args" :  ["-a", "C:/Users/DAA426/myWork/objectDetection-lightnet/data/cocojson/toConvert"]
         },  
 
 

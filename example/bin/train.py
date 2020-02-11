@@ -3,7 +3,7 @@ import os
 import logging
 import time
 import argparse
-from math import isinf
+from math import isinf, isnan
 from statistics import mean
 import torch
 import visdom
@@ -21,8 +21,11 @@ class TrainEngine(ln.engine.Engine):
     def start(self):
         self.params.to(self.device)
         self.dataloader.change_input_dim()
+<<<<<<< HEAD
         # self.optimizer.step(self.batch)     # Needed when resuming, harmless with batch=0
         self.optimizer.step()
+=======
+>>>>>>> lightnet/master
         self.optimizer.zero_grad()
 
         self.train_loss = {'tot': [], 'coord': [], 'conf': [], 'cls': []}
@@ -55,7 +58,7 @@ class TrainEngine(ln.engine.Engine):
         cls = mean(self.train_loss['cls'][-self.batch_subdivisions:])
         self.log(f'{self.batch} Loss:{tot:.5f} (Coord:{coord:.2f} Conf:{conf:.2f} Cls:{cls:.2f})')
 
-        if isinf(tot):
+        if isinf(tot) or isnan(tot):
             log.error('Infinite loss')
             self.sigint = True
             return
@@ -77,7 +80,10 @@ class TrainEngine(ln.engine.Engine):
 
     @ln.engine.Engine.batch_end(10)
     def resize(self):
-        self.dataloader.change_input_dim()
+        if self.batch >= self.max_batches - 200:
+        	self.dataloader.change_input_dim(self.input_dimension, None)
+        else:
+        	self.dataloader.change_input_dim()
 
     def quit(self):
         if self.batch >= self.max_batches:

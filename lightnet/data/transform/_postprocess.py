@@ -7,16 +7,19 @@
 import logging
 import numpy as np
 import torch
-from torch.autograd import Variable
 from .util import BaseTransform
+from distutils.version import LooseVersion
 
 try:
     import pandas as pd
 except ModuleNotFoundError:
     pd = None
 
-__all__ = ['GetBoundingBoxes', 'NonMaxSuppression', 'NonMaxSupression', 'TensorToBrambox', 'ReverseLetterbox']
+__all__ = ['GetBoundingBoxes', 'GetMultiScaleBoundingBoxes', 'NonMaxSuppression', 'NonMaxSupression', 'TensorToBrambox', 'ReverseLetterbox']
 log = logging.getLogger(__name__)
+
+torchversion = LooseVersion(torch.__version__)
+version120 = LooseVersion("1.2.0")
 
 
 class GetBoundingBoxes(BaseTransform):
@@ -24,7 +27,7 @@ class GetBoundingBoxes(BaseTransform):
 
     Args:
         num_classes (int): number of categories
-        anchors (list): 2D list representing anchor boxes (see :class:`lightnet.network.Darknet`)
+        anchors (list): 2D list representing anchor boxes (see :class:`lightnet.models.YoloV2`)
         conf_thresh (Number [0-1]): Confidence threshold to filter detections
 
     Returns:
@@ -77,7 +80,7 @@ class GetBoundingBoxes(BaseTransform):
 
         score_thresh = cls_max > self.conf_thresh
         if score_thresh.sum() == 0:
-            return torch.tensor([])
+            return torch.tensor([]).to(device)
 
         # Mask select boxes > conf_thresh
         coords = network_output.transpose(2, 3)[..., 0:4]
@@ -87,10 +90,46 @@ class GetBoundingBoxes(BaseTransform):
 
         # Get batch numbers of the detections
         batch_num = score_thresh.view(batch, -1)
-        nums = torch.arange(1, batch+1, dtype=batch_num.dtype, device=batch_num.device)
+        nums = torch.arange(1, batch+1, dtype=torch.uint8, device=batch_num.device)
         batch_num = (batch_num * nums[:, None])[batch_num] - 1
 
         return torch.cat([batch_num[:, None].float(), coords, scores[:, None], idx[:, None]], dim=1)
+
+
+class GetMultiScaleBoundingBoxes(GetBoundingBoxes):
+    """ Convert the output from multiple yolo output layers (at different scales) to bounding box tensors.
+
+    Args:
+        num_classes (int): number of categories
+        anchors (list): 3D list representing anchor boxes (see :class:`lightnet.models.YoloV3`)
+        conf_thresh (Number [0-1]): Confidence threshold to filter detections
+
+    Returns:
+        (Tensor [Boxes x 7]]): **[batch_num, x_center, y_center, width, height, confidence, class_id]** for every bounding box
+
+    Note:
+        All parameters are the same as :class:`~lightnet.data.transform.GetBoundingBoxes`, except for `anchors`. |br|
+        The anchors need separate values for each different network output scale and thus need to be lists of the original parameter.
+
+    Note:
+        The output tensor uses relative values for its coordinates.
+
+    Warning:
+        This post-processing function is not entirely equivalent to the Darknet implementation! |br|
+        We just execute the regular :class:`~lightnet.data.transform.GetBoundingBoxes` at multiple scales (different strides and anchors),
+        and as such did not implement overlapping class labels.
+    """
+    def __init__(self, num_classes, anchors, conf_thresh):
+        super().__init__(num_classes, anchors[0], conf_thresh)
+        self.root_anchors = torch.tensor(anchors, requires_grad=False)
+
+    def __call__(self, network_output):
+        boxes = []
+        for i, output in enumerate(network_output):
+            self.anchors = self.root_anchors[i]
+            self.num_anchors = self.anchors.shape[0]
+            boxes.append(super().__call__(output))
+        return torch.cat(boxes)
 
 
 class NonMaxSuppression(BaseTransform):
@@ -116,7 +155,10 @@ class NonMaxSuppression(BaseTransform):
             return boxes
 
         batches = boxes[:, 0]
-        keep = torch.empty(boxes.shape[0], dtype=torch.uint8, device=boxes.device)
+        if torchversion >= version120:
+            keep = torch.empty(boxes.shape[0], dtype=torch.bool, device=boxes.device)
+        else:
+            keep = torch.empty(boxes.shape[0], dtype=torch.uint8, device=boxes.device)
         for batch in torch.unique(batches, sorted=False):
             mask = batches == batch
             keep[mask] = self._nms(boxes[mask])
@@ -156,7 +198,10 @@ class NonMaxSuppression(BaseTransform):
             conflicting = (conflicting & same_class)
 
         conflicting = conflicting.cpu()
-        keep = torch.zeros(len(conflicting), dtype=torch.uint8)
+        if torchversion >= version120:
+            keep = torch.zeros(len(conflicting), dtype=torch.bool)
+        else:
+            keep = torch.zeros(len(conflicting), dtype=torch.uint8)
         supress = torch.zeros(len(conflicting), dtype=torch.float)
         for i, row in enumerate(conflicting):
             if not supress[i]:

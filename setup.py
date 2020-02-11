@@ -46,6 +46,7 @@ setup.setup(
     author='EAVISE',
     description='Building blocks for recreating darknet networks in pytorch',
     long_description=open('README.md').read(),
+    long_description_content_type='text/markdown',
     packages=find_packages(),
     test_suite='test',
     install_requires=requirements,
